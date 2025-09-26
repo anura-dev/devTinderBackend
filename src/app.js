@@ -1,38 +1,30 @@
 const express = require("express");
-const { adminAuth, userAuth } = require("./middlewares/auth");
+
 const app = express();
 
-//app.use is used to define routes that handle all HTTP methods.
-//app.METHOD is used to define routes that handle specific HTTP methods (GET, POST, PUT, DELETE, etc.)
-//app.all is used to handle all HTTP methods for a specific route. It is called for every request to the specified route, regardless of the HTTP method.
-//app.use vs app.all is that app.use is used to define middleware and routes, while app.all is specifically for handling all HTTP methods for a particular route.
-//......................................................................
+// app.use("/", (err, req, res, next) => {
+//   if (err) {
+//     res.status(500).send("Something broke from middleware!");
+//   }
+// });
 
-app.use("/admin", adminAuth);
+app.get("/getUserData", (req, res, next) => {
+  //try {
+  //Logic to get user data
 
-//app.use("/user", userAuth);
-
-//userAuth middleware is applied only to the /user/getUserData route.
-app.get("/user/getUserData", userAuth, (req, res) => {
-  res.send("Get user data");
-});
-app.get("/user/getUserPosts", userAuth, (req, res) => {
-  res.send("Get user posts");
-});
-
-app.post("/user/createPost", (req, res) => {
-  res.send("Created post for user");
-});
-//......................................................................
-app.get("/admin/getAllData", (req, res) => {
-  res.send("Get all data");
-});
-app.post("/admin/createUser", (req, res) => {
-  res.send("Created user");
+  //throw new Error("User data not found");
+  console.log("Inside user middleware");
+  res.send("User Authenticated");
+  //   } catch (err) {
+  //     res.status(403).send("Forbidden");
+  //   }
 });
 
-app.delete("/admin/deleteUser", (req, res) => {
-  res.send("Deleted user");
+//err is the first parameter to identify it as an error-handling middleware.
+app.use("/", (err, req, res, next) => {
+  if (err) {
+    res.status(500).send("Something broke!");
+  }
 });
 
 app.listen(7777, () => {
