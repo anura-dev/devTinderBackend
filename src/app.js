@@ -1,60 +1,40 @@
 const express = require("express");
+const { adminAuth, userAuth } = require("./middlewares/auth");
 const app = express();
-const port = 7777;
 
-//order of routes matter. More specific routes should be defined before less specific ones.
+//app.use is used to define routes that handle all HTTP methods.
+//app.METHOD is used to define routes that handle specific HTTP methods (GET, POST, PUT, DELETE, etc.)
+//app.all is used to handle all HTTP methods for a specific route. It is called for every request to the specified route, regardless of the HTTP method.
+//app.use vs app.all is that app.use is used to define middleware and routes, while app.all is specifically for handling all HTTP methods for a particular route.
+//......................................................................
 
-//app.get is used to define routes that specifically handle GET requests.
-// /ab+c = /abc, /abbc, /abbbc => b occurs one or more times
-// /ab?c = /ac, /abc ==> b is optional
-// /ab?cd = /acd, /abcd ==> b is optional
-// /ab*c = /abxxxxc => b occurs zero or more times
-// /ab(c|d) = /abc, /abd ==> either c or d
-// /a.b = /a_b, /a-b, /aXb ==> . matches any single character
-// /ab+cd = /abcd, /abbcd, /abbbcd ==> b occurs one or more times
+app.use("/admin", adminAuth);
 
-app.get("/abc", (req, res) => {
-  res.send({ first_name: "ANura", last_name: "Doe" });
+//app.use("/user", userAuth);
+
+//userAuth middleware is applied only to the /user/getUserData route.
+app.get("/user/getUserData", userAuth, (req, res) => {
+  res.send("Get user data");
+});
+app.get("/user/getUserPosts", userAuth, (req, res) => {
+  res.send("Get user posts");
 });
 
-//route parameters
-// /user/:userid/:name/:password
-// req.params = { userid: '123', name: 'anura', password: '1234' }
-app.get("/user/:userid/:name/:password", (req, res) => {
-  res.send({ first_name: "ANura", last_name: "Doe" });
-  console.log(req.params);
+app.post("/user/createPost", (req, res) => {
+  res.send("Created post for user");
+});
+//......................................................................
+app.get("/admin/getAllData", (req, res) => {
+  res.send("Get all data");
+});
+app.post("/admin/createUser", (req, res) => {
+  res.send("Created user");
 });
 
-//route handlers
+app.delete("/admin/deleteUser", (req, res) => {
+  res.send("Deleted user");
+});
 
-// e.g:: app.use('/test', [cb1, cb2], cb3, cb4)
-// you can define multiple callback functions that behave like middleware to handle a route.
-// you can also define an array of callback functions to handle a route.
-// you can also mix and match the two.
-// all the callback functions should call next() to pass the control to the next callback function.
-// if a callback function does not call next(), the request will be left hanging.
-// if a callback function sends a response, the request will be left hanging unless next() is called before sending the response.
-// if a callback function sends a response, the subsequent callback functions will not be executed unless next() is called before sending the response.
-// you can also use app.use() to define routes that handle all HTTP methods.
-app.use(
-  "/test",
-  (req, res, next) => {
-    console.log("Inside test middleware");
-    next();
-    res.send("Test middleware");
-  },
-  (req, res, next) => {
-    next();
-    console.log("Inside test middleware 2");
-    // res.send("Test middleware 2");
-  },
-  (req, res, next) => {
-    console.log("Inside test middleware 3");
-    //res.send("Test middleware 3");
-    //next();
-  }
-);
-
-app.listen(port, () => {
-  console.log("Server started running on port " + port);
+app.listen(7777, () => {
+  console.log("Server is running on port 7777");
 });
