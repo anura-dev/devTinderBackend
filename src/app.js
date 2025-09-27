@@ -1,19 +1,23 @@
 const express = require("express");
 require("./config/database");
-const userSchema = require("./models/user");
 
 const connectDB = require("./config/database");
+const User = require("./models/user");
 
 const app = express();
+app.use(express.json());
 
 app.post("/signup", async (req, res) => {
-  // userSchema is used to create a new user
-  const user = new userSchema({
-    firstName: "Nirvika",
-    lastName: " Mohniya",
-    email: "nirvika@example.com",
-    password: "nirvika123",
-  });
+  //Creating new instance of User model
+  console.log(req.body);
+  const user = new User(req.body);
+
+  //   const user = new User({
+  //     firstName: "Nirvika",
+  //     lastName: " Mohniya",
+  //     email: "nirvika@example.com",
+  //     password: "nirvika123",
+  //   });
   try {
     const newUser = await user.save(); // Save the user to the database
     console.log(newUser);
