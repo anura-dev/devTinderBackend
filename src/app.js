@@ -29,7 +29,7 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-//get all users by email
+//get all users by email (find{email})
 app.get("/user", async (req, res) => {
   const userEmail = req.body.email;
   console.log("userEmail:: ", userEmail);
@@ -46,7 +46,7 @@ app.get("/user", async (req, res) => {
   }
 });
 
-//get one user by email
+//get one user by email (findOne({email}))
 app.get("/userone", async (req, res) => {
   const userEmail = req.body.email;
   console.log("userEmail:: ", userEmail);
@@ -64,11 +64,88 @@ app.get("/userone", async (req, res) => {
   }
 });
 
-//feed api to get all users
+//feed api to get all users (find()) (read)
 app.get("/feed", async (req, res) => {
   try {
     const users = await User.find(); // Fetch all users from the database
     res.send(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+//delete user by id (findByIdAndDelete(id))
+
+app.delete("/user", async (req, res) => {
+  const userId = req.body.id;
+
+  try {
+    const deletedUser = await User.findByIdAndDelete(userId);
+    //const deletedUser = await User.findByIdAndDelete(_id: userId); // if no condition is passed it will delete first document
+    if (!deletedUser) {
+      return res.status(404).send("No user found with the provided id");
+    } else {
+      res.send("User deleted successfully");
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+//delete user by email (findOneAndDelete({email}))
+//(deleteOne({email})) //deleteOne is similar to findOneAndDelete
+app.delete("/useremail", async (req, res) => {
+  const userEmail = req.body.email;
+
+  try {
+    const deletedUser = await User.deleteOne({ email: userEmail }); //if two users have same email it will delete first one
+    if (!deletedUser) {
+      return res.status(404).send("No user found with the provided email");
+    } else {
+      res.send("User deleted successfully");
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+//deleteMany({email}) //delete all users with same email
+app.delete("/useremails", async (req, res) => {
+  const userEmail = req.body.email;
+
+  try {
+    const deletedUsers = await User.deleteMany({ email: userEmail });
+    if (deletedUsers.deletedCount === 0) {
+      return res.status(404).send("No users found with the provided email");
+    } else {
+      res.send("Users deleted successfully");
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
+//update user by id (findByIdAndUpdate(id, update))
+//PUT vs PATCH
+//PUT - update entire document
+//PATCH - update specific fields
+app.put("/user", async (req, res) => {
+  const userId = req.body.id;
+  const updateData = req.body; // { firstName: "NewFirstName", age: 25 }
+  //console.log("updateData:: ", updateData);
+  try {
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    }); //new:true will return updated document
+    if (!updatedUser) {
+      return res.status(404).send("No user found with the provided id");
+    } else {
+      res.send(updatedUser);
+    }
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal Server Error");
