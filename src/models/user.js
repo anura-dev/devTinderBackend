@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const validator = require("validator");
 
 const userSchema = new mongoose.Schema(
   {
@@ -24,7 +25,12 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true, // Remove whitespace
-      match: [/.+\@.+\..+/, "Please fill a valid email address"],
+      //match: [/.+\@.+\..+/, "Please fill a valid email address"],
+      validate(value) {
+        if (!validator.isEmail(value)) {
+          throw new Error("Invalid email address");
+        }
+      },
     },
     password: {
       type: String,
@@ -62,7 +68,12 @@ const userSchema = new mongoose.Schema(
     photoUrl: {
       type: String,
       default: "https://example.com/default-profile.png",
-      match: [/^https?:\/\/.+\.(jpg|jpeg|png|gif)$/, "Please fill a valid URL"],
+      ///match: [/^https?:\/\/.+\.(jpg|jpeg|png|gif)$/, "Please fill a valid URL"],
+      validate(value) {
+        if (value && !validator.isURL(value)) {
+          throw new Error("Invalid URL");
+        }
+      },
     },
     skills: {
       type: [String],
