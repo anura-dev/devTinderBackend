@@ -25,7 +25,7 @@ app.post("/signup", async (req, res) => {
     res.send("User saved successfully"); // Send a success response
   } catch (error) {
     console.error(error);
-    res.status(500).send("Internal Server Error");
+    res.status(400).send("Bad Request: " + error.message);
   }
 });
 
@@ -133,13 +133,43 @@ app.delete("/useremails", async (req, res) => {
 //PUT vs PATCH
 //PUT - update entire document
 //PATCH - update specific fields
-app.put("/user", async (req, res) => {
-  const userId = req.body.id;
+app.patch("/user/:id", async (req, res) => {
+  const userId = req.params?.id;
   const updateData = req.body; // { firstName: "NewFirstName", age: 25 }
   //console.log("updateData:: ", updateData);
+
   try {
+    const ALLOWED_UPDATES = ["age", "gender", "photoUrl", "skills", "about"];
+    const requestedUpdates = Object.keys(updateData);
+    console.log("requestedUpdates:: ", requestedUpdates);
+    //validation for allowed updates
+    const isValidOperation = requestedUpdates.every((update) =>
+      ALLOWED_UPDATES.includes(update)
+    );
+    if (!isValidOperation) {
+      return res.status(400).send("Invalid updates");
+    }
+
+    if (updateData?.skills.length > 5) {
+      return res.status(400).send("You can add maximum 5 skills");
+    }
+
+    if (updateData?.age) {
+      if (updateData.age < 18 || updateData.age > 65) {
+        return res.status(400).send("Age must be between 18 and 65");
+      }
+    }
+
+    if (updateData?.gender) {
+      const validGenders = ["male", "female", "other"];
+      if (!validGenders.includes(updateData.gender)) {
+        return res.status(400).send("Invalid gender");
+      }
+    }
+
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
       new: true,
+      runValidators: true,
     }); //new:true will return updated document
     if (!updatedUser) {
       return res.status(404).send("No user found with the provided id");
@@ -148,7 +178,7 @@ app.put("/user", async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-    res.status(500).send("Internal Server Error");
+    res.status(400).send("Bad Request: " + error.message);
   }
 });
 
